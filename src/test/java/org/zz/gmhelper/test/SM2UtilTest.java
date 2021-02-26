@@ -21,6 +21,22 @@ import java.util.Arrays;
 public class SM2UtilTest extends GMBaseTest {
 
     @Test
+    public void genPubANdPrivate(){
+        AsymmetricCipherKeyPair keyPair = SM2Util.generateKeyPairParameter();
+        ECPrivateKeyParameters priKey = (ECPrivateKeyParameters) keyPair.getPrivate();
+        ECPublicKeyParameters pubKey = (ECPublicKeyParameters) keyPair.getPublic();
+
+        System.out.println("Pri Hex:"
+                + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
+        System.out.println("Pub X Hex:"
+                + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
+        System.out.println("Pub Y Hex:"
+                + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
+        System.out.println("Pub Point Hex:"
+                + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
+    }
+
+    @Test
     public void testSignAndVerify() {
         try {
             AsymmetricCipherKeyPair keyPair = SM2Util.generateKeyPairParameter();
@@ -61,7 +77,7 @@ public class SM2UtilTest extends GMBaseTest {
     @Test
     public void testEncryptAndDecrypt() {
         try {
-            AsymmetricCipherKeyPair keyPair = SM2Util.generateKeyPairParameter();
+          /*  AsymmetricCipherKeyPair keyPair = SM2Util.generateKeyPairParameter();
             ECPrivateKeyParameters priKey = (ECPrivateKeyParameters) keyPair.getPrivate();
             ECPublicKeyParameters pubKey = (ECPublicKeyParameters) keyPair.getPublic();
 
@@ -72,18 +88,20 @@ public class SM2UtilTest extends GMBaseTest {
             System.out.println("Pub Y Hex:"
                 + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
             System.out.println("Pub Point Hex:"
-                + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
-
+                + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());*/
+            String plainText="中国长城";
             //公钥 16进制表示 不包含前缀04
             String pubHex="D527EC1A86243AF643001301A39C92D5043F84606BCF9F926967EB2A63C7A360864D754C2F982C4D503A9A78B2F43DD5A76A44DE165CD04585A25AF6277B0E78";
 
             String privateHex="4F1670EBC63FB672717B316FDCAD71802487F50C94FB76C548EC09747BB9DDB4";
 
-            byte[] encryptedData = SM2Util.encryptByPubHex(pubHex, SRC_DATA_24B);
+            byte[] encryptedData = SM2Util.encryptByPubHex(pubHex, plainText.getBytes());
             System.out.println("SM2 encrypt result:\n" + ByteUtils.toHexString(encryptedData));
+            encryptedData=ByteUtils.fromHexString("04505CB8FCCB726F59C652360F040C3082E28CE4B414EA6F03234FEFCBA2A378558D71CDEB7B15E35341AF3BD54F2283F3B43F16A6C845347316561E62A805255B12E501ECBCF7927CAACFA5A4D277A35193A7DC1B6EEEC874358A3B8E1E7923F565847696671E821A7F559CE9");
             byte[] decryptedData = SM2Util.decryptByPriHex(privateHex, encryptedData);
             System.out.println("SM2 decrypt result:\n" + ByteUtils.toHexString(decryptedData));
-            if (!Arrays.equals(decryptedData, SRC_DATA_24B)) {
+            System.out.println("SM2 decrypt result 明文:\n" + new String(decryptedData));
+            if (!Arrays.equals(decryptedData, plainText.getBytes())) {
                 Assert.fail();
             }
             System.err.println("加解密成功!");
