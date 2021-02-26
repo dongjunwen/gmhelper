@@ -69,18 +69,24 @@ public class SM2UtilTest extends GMBaseTest {
                 + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
             System.out.println("Pub X Hex:"
                 + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
-            System.out.println("Pub X Hex:"
+            System.out.println("Pub Y Hex:"
                 + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
             System.out.println("Pub Point Hex:"
                 + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
 
-            byte[] encryptedData = SM2Util.encrypt(pubKey, SRC_DATA_24B);
+            //公钥 16进制表示 不包含前缀04
+            String pubHex="D527EC1A86243AF643001301A39C92D5043F84606BCF9F926967EB2A63C7A360864D754C2F982C4D503A9A78B2F43DD5A76A44DE165CD04585A25AF6277B0E78";
+
+            String privateHex="4F1670EBC63FB672717B316FDCAD71802487F50C94FB76C548EC09747BB9DDB4";
+
+            byte[] encryptedData = SM2Util.encryptByPubHex(pubHex, SRC_DATA_24B);
             System.out.println("SM2 encrypt result:\n" + ByteUtils.toHexString(encryptedData));
-            byte[] decryptedData = SM2Util.decrypt(priKey, encryptedData);
+            byte[] decryptedData = SM2Util.decryptByPriHex(privateHex, encryptedData);
             System.out.println("SM2 decrypt result:\n" + ByteUtils.toHexString(decryptedData));
             if (!Arrays.equals(decryptedData, SRC_DATA_24B)) {
                 Assert.fail();
             }
+            System.err.println("加解密成功!");
         } catch (Exception ex) {
             ex.printStackTrace();
             Assert.fail();

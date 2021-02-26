@@ -113,6 +113,32 @@ public class SM2Util extends GMBaseUtil {
     }
 
     /**
+     * @param xHex             十六进制形式的公钥x分量，如果是SM2算法，Hex字符串长度应该是64（即32字节）
+     * @param yHex             十六进制形式的公钥y分量，如果是SM2算法，Hex字符串长度应该是64（即32字节）
+     * @param srcData          原文
+     * @return 默认输出C1C3C2顺序的密文。C1为65字节第1字节为压缩标识，这里固定为0x04，后面64字节为xy分量各32字节。C3为32字节。C2长度与原文一致。
+     * @throws InvalidCipherTextException
+     */
+    public static byte[] encryptByPubXyHex(String xHex, String yHex,byte[] srcData)
+            throws InvalidCipherTextException {
+        ECPublicKeyParameters pubKeyParameters = BCECUtil.createECPublicKeyParameters(xHex,yHex,CURVE,DOMAIN_PARAMS);
+        return encrypt(Mode.C1C3C2, pubKeyParameters, srcData);
+    }
+    /**
+     * @param pubHex             十六进制形式的公钥(x分量和y分量拼接而成即可)，如果是SM2算法，Hex字符串长度应该是128（即64字节）
+     * @param srcData          原文
+     * @return 默认输出C1C3C2顺序的密文。C1为65字节第1字节为压缩标识，这里固定为0x04，后面64字节为xy分量各32字节。C3为32字节。C2长度与原文一致。
+     * @throws InvalidCipherTextException
+     */
+    public static byte[] encryptByPubHex(String pubHex,byte[] srcData)
+            throws InvalidCipherTextException {
+        String xHex=pubHex.substring(0,64);
+        String yHex=pubHex.substring(64);
+        ECPublicKeyParameters pubKeyParameters = BCECUtil.createECPublicKeyParameters(xHex,yHex,CURVE,DOMAIN_PARAMS);
+        return encrypt(Mode.C1C3C2, pubKeyParameters, srcData);
+    }
+
+    /**
      * @param pubKey  公钥
      * @param srcData 原文
      * @return 默认输出C1C3C2顺序的密文。C1为65字节第1字节为压缩标识，这里固定为0x04，后面64字节为xy分量各32字节。C3为32字节。C2长度与原文一致。
@@ -159,6 +185,17 @@ public class SM2Util extends GMBaseUtil {
         ParametersWithRandom pwr = new ParametersWithRandom(pubKeyParameters, new SecureRandom());
         engine.init(true, pwr);
         return engine.processBlock(srcData, 0, srcData.length);
+    }
+    /**
+     * @param priHex 私钥16进制表示  如果是SM2算法，Hex字符串长度应该是64（即32字节）
+     * @param sm2Cipher        默认输入C1C3C2顺序的密文。C1为65字节第1字节为压缩标识，这里固定为0x04，后面64字节为xy分量各32字节。C3为32字节。C2长度与原文一致。
+     * @return 原文。SM2解密返回了数据则一定是原文，因为SM2自带校验，如果密文被篡改或者密钥对不上，都是会直接报异常的。
+     * @throws InvalidCipherTextException
+     */
+    public static byte[] decryptByPriHex(String priHex, byte[] sm2Cipher)
+            throws InvalidCipherTextException {
+        ECPrivateKeyParameters priKeyParameters=BCECUtil.createECPrivateKeyParameters(priHex,DOMAIN_PARAMS);
+        return decrypt(Mode.C1C3C2, priKeyParameters, sm2Cipher);
     }
 
     /**
